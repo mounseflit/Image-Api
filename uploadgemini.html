@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Image Analysis Playground</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .description {
+            text-align: center;
+            color: #5f6368;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        .upload-zone {
+            border: 3px dashed #dadce0;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+        .upload-zone.dragover {
+            border-color: #1a73e8;
+            background-color: #e8f0fe;
+        }
+        .upload-zone i {
+            font-size: 48px;
+            color: #5f6368;
+            margin-bottom: 15px;
+        }
+        #imageInput {
+            display: none;
+        }
+        .upload-btn {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .upload-btn:hover {
+            background-color: #1557b0;
+            transform: translateY(-2px);
+        }
+        #imagePreview {
+            max-width: 100%;
+            max-height: 400px;
+            display: none;
+            border-radius: 12px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #analyzeBtn {
+            background-color: #34a853;
+            color: white;
+            padding: 14px 36px;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 200px;
+            display: block;
+            margin: 20px auto;
+        }
+        #analyzeBtn:disabled {
+            background-color: #9aa0a6;
+            cursor: not-allowed;
+        }
+        #analyzeBtn:hover:not(:disabled) {
+            background-color: #2d8e47;
+            transform: translateY(-2px);
+        }
+        #result {
+            white-space: pre-wrap;
+            padding: 24px;
+            border-radius: 12px;
+            display: none;
+            background-color: #f8f9fa;
+            margin-top: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+            border: 1px solid #dadce0;
+        }
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #1a73e8;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gemini Image Analysis Playground</h1>
+        <p class="description">
+            Upload any image and let Gemini AI analyze it for you. Get detailed insights about the content, objects, 
+            and context of your images. Simply drag and drop an image or click to upload.
+        </p>
+        
+        <div class="upload-zone" id="dropZone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag and drop your image here or</p>
+            <label for="imageInput" class="upload-btn">
+                Choose File
+            </label>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <p>Prompt (optional):</p>
+        <input name="prompt" type="text" id="prompt" placeholder="Enter your prompt here..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 20px;">
+       
+
+
+        <img id="imagePreview">
+        <div class="loader" id="loading"></div>
+        <button id="analyzeBtn" disabled>Analyze Image</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const result = document.getElementById('result');
+        const loading = document.getElementById('loading');
+
+        // Drag and drop handlers
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            handleFile(file);
+        }
+
+        function handleFile(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    analyzeBtn.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            try {
+                loading.style.display = 'block';
+                analyzeBtn.disabled = true;
+                result.style.display = 'none';
+
+                const prompt = document.getElementById('prompt').value.trim();
+
+                if (!imagePreview.src) {
+                    alert("Please upload an image first.");
+                    return;
+                }
+
+                const response = await fetch('/analyze-image/gemini', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        base64Image: imagePreview.src.split(',')[1],
+                        prompt: prompt || "describe the image",
+                        model: "gemini-2.0-flash",
+                    })
+                });
+
+                const data = await response.json();
+                result.style.display = 'block';
+                
+                if (data.error) {
+                    result.textContent = `Error: ${data.error}`;
+                } else {
+                    result.textContent = data.response || "No response from the model.";
+                }
+            } catch (error) {
+                result.style.display = 'block';
+                result.textContent = `Error: ${error.message}`;
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

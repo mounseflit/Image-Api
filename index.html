@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Analysis API Documentation</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2d3748;
+            --background-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --accent-color: #4f46e5;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--secondary-color);
+        }
+
+        .api-url {
+            background-color: #2d3748;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Consolas', monospace;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .demo-button {
+            padding: 12px 24px;
+            border-radius: 6px;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 4px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .endpoint {
+            background-color: white;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .endpoint:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .method {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-right: 10px;
+        }
+
+        .post { background-color: #22c55e; }
+        .get { background-color: #3b82f6; }
+
+        code {
+            background-color: #f1f5f9;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #374151;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .endpoint h2 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .endpoint h3 {
+            color: var(--primary-color);
+            margin-top: 25px;
+        }
+
+        .server-info {
+            background-color: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .server-info ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .server-info li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .server-info li:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .endpoint {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Analysis API Documentation</h1>
+    
+    <p class="description">This API allows you to analyze images using Google's Gemini AI model. You can upload images or use the camera to capture images for analysis.</p>
+    <p class="description">The API provides endpoints for uploading images, analyzing them, and retrieving results.</p>
+    <p class="description">You can also use the API to generate variations of images based on specific prompts.</p>
+    <p class="description">Explore the API endpoints below to get started!</p>
+
+    <h3>API Base URL</h3>
+    <div class="api-url" style="font-size: 1.2em;">
+    https://aicrafters-image-api.vercel.app
+    </div>
+
+ 
+
+    <div class="endpoint">
+        <h2><span class="method post">POST</span> /analyze-image/gemini</h2>
+        <p>Analyzes images using Google's Gemini AI model.</p>
+        
+        <h3>Request Body Parameters</h3>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>base64Image</code></td>
+                <td>string</td>
+                <td>Required</td>
+                <td>Base64 encoded image data</td>
+            </tr>
+            <tr>
+                <td><code>prompt</code></td>
+                <td>string</td>
+                <td>"Describe the image"</td>
+                <td>Prompt for image analysis</td>
+            </tr>
+            <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td>"gemini-2.0-flash"</td>
+                <td>Gemini model to use</td>
+            </tr>
+            <tr>
+                <td><code>temperature</code></td>
+                <td>number</td>
+                <td>0.5</td>
+                <td>Controls randomness in the output</td>
+            </tr>
+            <!-- <tr>
+                <td><code>maxOutputTokens</code></td>
+                <td>number</td>
+                <td>2048</td>
+                <td>Maximum number of tokens in the output</td>
+            </tr>
+            <tr>
+                <td><code>topP</code></td>
+                <td>number</td>
+                <td>0.8</td>
+                <td>Nucleus sampling threshold</td>
+            </tr>
+            <tr>
+                <td><code>topK</code></td>
+                <td>number</td>
+                <td>40</td>
+                <td>Number of highest probability tokens to consider</td>
+            </tr>
+            <tr>
+                <td><code>stopSequences</code></td>
+                <td>array</td>
+                <td>[]</td>
+                <td>Sequences where the model should stop generating</td>
+            </tr>
+            <tr>
+                <td><code>maxInputTokens</code></td>
+                <td>number</td>
+                <td>2048</td>
+                <td>Maximum number of input tokens</td>
+            </tr>
+            <tr>
+                <td><code>numOutputs</code></td>
+                <td>number</td>
+                <td>1</td>
+                <td>Number of output variations to generate</td>
+            </tr>
+            <tr>
+                <td><code>stream</code></td>
+                <td>boolean</td>
+                <td>false</td>
+                <td>Enable streaming of results</td>
+            </tr>
+            <tr>
+                <td><code>returnPrompt</code></td>
+                <td>boolean</td>
+                <td>false</td>
+                <td>Include prompt in response</td>
+            </tr>
+            <tr>
+                <td><code>returnMetadata</code></td>
+                <td>boolean</td>
+                <td>false</td>
+                <td>Include metadata in response</td>
+            </tr>
+            <tr>
+                <td><code>returnChoices</code></td>
+                <td>boolean</td>
+                <td>false</td>
+                <td>Include alternative choices in response</td>
+            </tr> -->
+        </table>
+    </div>
+
+
+    <div class="endpoint">
+        <h2><span class="method get">GET</span> /uploadgemini</h2>
+        <p>Returns the upload interface for Gemini image analysis.</p>
+        <div class="demo-buttons">
+            <a href="/uploadgemini" class="demo-button">Try Upload Demo</a>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <h2><span class="method get">GET</span> /cameragemini</h2>
+        <p>Returns the camera interface for Gemini image analysis.</p>
+        <div class="demo-buttons">
+            <a href="/cameragemini" class="demo-button">Try Camera Demo</a>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <h2><span class="method get">GET</span> /</h2>
+        <p>Returns the main application page.</p>
+    </div>
+
+    <div class="endpoint server-info">
+        <h3>Server Configuration</h3>
+        <ul>
+            <li>✨ CORS enabled</li>
+            <li>📦 JSON body parsing (limit: 50MB)</li>
+            <li>📁 Static file serving from 'public' directory</li>
+            <li>🚀 Server runs on port 3000</li>
+        </ul>
+    </div>
+</body>
+</html>
